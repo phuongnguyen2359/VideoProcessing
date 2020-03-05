@@ -17,7 +17,7 @@ final class MainViewController: UIViewController {
     let secondPlayer: AVPlayer = AVPlayer()
     var firstPlayerItem: AVPlayerItem!
     var secondPlayerItem: AVPlayerItem!
-    let overlapDuration: CMTime = CMTime(seconds: 3, preferredTimescale: .init())
+    var overlapDuration: Float = 3.0
     
     lazy var firstPlayerItemVideoOutput: AVPlayerItemVideoOutput = {
         let attributes = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
@@ -63,18 +63,22 @@ final class MainViewController: UIViewController {
         
         var firstPixelBuffer: CVPixelBuffer?
         var secondPixelBuffer: CVPixelBuffer?
+        
+        if secondPlayer.rate == 0 && ((firstPlayerItem.duration.seconds - firstVideoTime.seconds) <= Double(self.overlapDuration)) {
+            secondPlayer.play()
+        }
 
         if firstPlayer.rate != 0, firstPlayerItemVideoOutput.hasNewPixelBuffer(forItemTime: firstVideoTime) {
             
             firstPixelBuffer = firstPlayerItemVideoOutput.copyPixelBuffer(forItemTime: firstVideoTime, itemTimeForDisplay: nil)
             self.metalView.firstPixelBuffer = firstPixelBuffer
-            self.metalView.firstInputTime = firstVideoTime.seconds
+            self.metalView.firstVidRemainTime = firstPlayerItem.duration.seconds - firstVideoTime.seconds
         }
         
         if secondPlayer.rate != 0, secondPlayerItemVideoOutput.hasNewPixelBuffer(forItemTime: secondVideoTime) {
             secondPixelBuffer = secondPlayerItemVideoOutput.copyPixelBuffer(forItemTime: secondVideoTime, itemTimeForDisplay: nil)
             self.metalView.secondPixelBuffer = secondPixelBuffer
-            self.metalView.secondInputTime = secondVideoTime.seconds
+            self.metalView.secondVidRemainTime = secondPlayerItem.duration.seconds - secondVideoTime.seconds
         }
         
         if firstPixelBuffer != nil || secondPixelBuffer != nil {
@@ -106,6 +110,8 @@ final class MainViewController: UIViewController {
         secondPlayerItem = AVPlayerItem(asset: secondAsset)
         secondPlayerItem.add(secondPlayerItemVideoOutput)
         secondPlayer.replaceCurrentItem(with: secondPlayerItem)
+        
+        metalView.overlapDuration = self.overlapDuration
         
         displayLink.isPaused = false
         

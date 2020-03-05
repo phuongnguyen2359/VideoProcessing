@@ -13,9 +13,9 @@ import UIKit
 
 final class MetalView: MTKView {
     
-    var firstInputTime: CFTimeInterval?
+    var firstVidRemainTime: CFTimeInterval?
     
-    var secondInputTime: CFTimeInterval?
+    var secondVidRemainTime: CFTimeInterval?
     
     var firstPixelBuffer: CVPixelBuffer?
     
@@ -26,6 +26,8 @@ final class MetalView: MTKView {
     var secondTransformedTexture: MTLTexture?
     
     var lanczos: MPSImageLanczosScale
+    
+    var overlapDuration: Float = 3
     
     private var textureCache: CVMetalTextureCache?
     private var commandQueue: MTLCommandQueue
@@ -75,7 +77,7 @@ final class MetalView: MTKView {
     
     override func draw(_ rect: CGRect) {
         autoreleasepool {
-            if rect.width > 0 && rect.height > 0 && (firstInputTime != nil || secondInputTime != nil) {
+            if rect.width > 0 && rect.height > 0 && (firstVidRemainTime != nil || secondVidRemainTime != nil) {
                 self.render(self)
             }
         }
@@ -126,7 +128,7 @@ final class MetalView: MTKView {
         guard let drawable: CAMetalDrawable = self.currentDrawable else { return }
         computeCommandEncoder?.setTexture(drawable.texture, index: 2)
         
-        var time = Float(self.firstInputTime!)
+        var time = Float(self.firstVidRemainTime!)
         computeCommandEncoder?.setBytes(&time, length: MemoryLayout<Float>.size, index: 0)
         
         var firstVidIsNill = firstPixelBuffer == nil
@@ -135,16 +137,19 @@ final class MetalView: MTKView {
         var secondVidIsNill = secondPixelBuffer == nil
         computeCommandEncoder?.setBytes(&secondVidIsNill, length: MemoryLayout<Bool>.size, index: 2)
         
+        computeCommandEncoder?.setBytes(&overlapDuration, length: MemoryLayout<Float>.size, index: 3)
         
         computeCommandEncoder?.dispatchThreadgroups(drawable.texture.threadGroups(), threadsPerThreadgroup: drawable.texture.threadGroupCount())
         
         computeCommandEncoder?.endEncoding()
         
         // Blur effect
-        var texture: MTLTexture? = drawable.texture
-        
-        let kernel = MPSImageGaussianBlur(device: device!, sigma: time)
-        kernel.encode(commandBuffer: commandBuffer!, inPlaceTexture: &texture!, fallbackCopyAllocator: nil)
+        if firstVidRemainTime!.isLessThanOrEqualTo(Double(overlapDuration)){
+            var texture: MTLTexture? = drawable.texture
+            
+            let kernel = MPSImageGaussianBlur(device: device!, sigma: time)
+            kernel.encode(commandBuffer: commandBuffer!, inPlaceTexture: &texture!, fallbackCopyAllocator: nil)
+        }
         
         commandBuffer?.present(drawable)
         commandBuffer?.commit()
