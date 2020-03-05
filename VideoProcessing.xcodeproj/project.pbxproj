@@ -7,23 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E13B8E28240F238B00FE6271 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E27240F238B00FE6271 /* MetalView.swift */; };
+		E13B8E2A240F28B400FE6271 /* ColorKernel.metal in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E29240F28B400FE6271 /* ColorKernel.metal */; };
+		E13B8E2D240F2ECF00FE6271 /* first.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E13B8E2C240F2ECF00FE6271 /* first.mp4 */; };
+		E13C4DD52410FBFB00982510 /* second.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E13C4DD42410FBFB00982510 /* second.mp4 */; };
 		E1A99BE0240EADC500D87C12 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BDF240EADC500D87C12 /* AppDelegate.swift */; };
 		E1A99BE2240EADC500D87C12 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BE1240EADC500D87C12 /* SceneDelegate.swift */; };
-		E1A99BE4240EADC500D87C12 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BE3240EADC500D87C12 /* ViewController.swift */; };
+		E1A99BE4240EADC500D87C12 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BE3240EADC500D87C12 /* MainViewController.swift */; };
 		E1A99BE7240EADC500D87C12 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E1A99BE5240EADC500D87C12 /* Main.storyboard */; };
 		E1A99BE9240EADC700D87C12 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E1A99BE8240EADC700D87C12 /* Assets.xcassets */; };
 		E1A99BEC240EADC700D87C12 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E1A99BEA240EADC700D87C12 /* LaunchScreen.storyboard */; };
+		E1A99BF5240EBC9800D87C12 /* UIView+Decor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BF4240EBC9800D87C12 /* UIView+Decor.swift */; };
+		E1B5BC5E241151360038EAAD /* MTLTexture+Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B5BC5D241151360038EAAD /* MTLTexture+Transform.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E13B8E27240F238B00FE6271 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+		E13B8E29240F28B400FE6271 /* ColorKernel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ColorKernel.metal; sourceTree = "<group>"; };
+		E13B8E2C240F2ECF00FE6271 /* first.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = first.mp4; sourceTree = "<group>"; };
+		E13C4DD42410FBFB00982510 /* second.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = second.mp4; sourceTree = "<group>"; };
 		E1A99BDC240EADC500D87C12 /* VideoProcessing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoProcessing.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1A99BDF240EADC500D87C12 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E1A99BE1240EADC500D87C12 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		E1A99BE3240EADC500D87C12 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		E1A99BE3240EADC500D87C12 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		E1A99BE6240EADC500D87C12 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		E1A99BE8240EADC700D87C12 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E1A99BEB240EADC700D87C12 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E1A99BED240EADC700D87C12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E1A99BF4240EBC9800D87C12 /* UIView+Decor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Decor.swift"; sourceTree = "<group>"; };
+		E1B5BC5D241151360038EAAD /* MTLTexture+Transform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MTLTexture+Transform.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,6 +49,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E13B8E2B240F2EA100FE6271 /* Resource */ = {
+			isa = PBXGroup;
+			children = (
+				E13C4DD42410FBFB00982510 /* second.mp4 */,
+				E13B8E2C240F2ECF00FE6271 /* first.mp4 */,
+			);
+			path = Resource;
+			sourceTree = "<group>";
+		};
 		E1A99BD3240EADC500D87C12 = {
 			isa = PBXGroup;
 			children = (
@@ -56,15 +77,44 @@
 		E1A99BDE240EADC500D87C12 /* VideoProcessing */ = {
 			isa = PBXGroup;
 			children = (
+				E13B8E2B240F2EA100FE6271 /* Resource */,
+				E1A99BF6240EBF3A00D87C12 /* Module */,
+				E1A99BF3240EBC7A00D87C12 /* Shared */,
 				E1A99BDF240EADC500D87C12 /* AppDelegate.swift */,
 				E1A99BE1240EADC500D87C12 /* SceneDelegate.swift */,
-				E1A99BE3240EADC500D87C12 /* ViewController.swift */,
-				E1A99BE5240EADC500D87C12 /* Main.storyboard */,
 				E1A99BE8240EADC700D87C12 /* Assets.xcassets */,
 				E1A99BEA240EADC700D87C12 /* LaunchScreen.storyboard */,
 				E1A99BED240EADC700D87C12 /* Info.plist */,
+				E13B8E29240F28B400FE6271 /* ColorKernel.metal */,
 			);
 			path = VideoProcessing;
+			sourceTree = "<group>";
+		};
+		E1A99BF3240EBC7A00D87C12 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				E1A99BF4240EBC9800D87C12 /* UIView+Decor.swift */,
+				E1B5BC5D241151360038EAAD /* MTLTexture+Transform.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		E1A99BF6240EBF3A00D87C12 /* Module */ = {
+			isa = PBXGroup;
+			children = (
+				E1A99BF7240EBF4B00D87C12 /* Main */,
+			);
+			path = Module;
+			sourceTree = "<group>";
+		};
+		E1A99BF7240EBF4B00D87C12 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				E1A99BE3240EADC500D87C12 /* MainViewController.swift */,
+				E1A99BE5240EADC500D87C12 /* Main.storyboard */,
+				E13B8E27240F238B00FE6271 /* MetalView.swift */,
+			);
+			path = Main;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -126,7 +176,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				E1A99BEC240EADC700D87C12 /* LaunchScreen.storyboard in Resources */,
+				E13B8E2D240F2ECF00FE6271 /* first.mp4 in Resources */,
 				E1A99BE9240EADC700D87C12 /* Assets.xcassets in Resources */,
+				E13C4DD52410FBFB00982510 /* second.mp4 in Resources */,
 				E1A99BE7240EADC500D87C12 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -138,8 +190,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1A99BE4240EADC500D87C12 /* ViewController.swift in Sources */,
+				E13B8E28240F238B00FE6271 /* MetalView.swift in Sources */,
+				E1A99BE4240EADC500D87C12 /* MainViewController.swift in Sources */,
 				E1A99BE0240EADC500D87C12 /* AppDelegate.swift in Sources */,
+				E1B5BC5E241151360038EAAD /* MTLTexture+Transform.swift in Sources */,
+				E13B8E2A240F28B400FE6271 /* ColorKernel.metal in Sources */,
+				E1A99BF5240EBC9800D87C12 /* UIView+Decor.swift in Sources */,
 				E1A99BE2240EADC500D87C12 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -285,6 +341,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3BXXMK3UNC;
 				INFOPLIST_FILE = VideoProcessing/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -302,6 +359,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3BXXMK3UNC;
 				INFOPLIST_FILE = VideoProcessing/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
