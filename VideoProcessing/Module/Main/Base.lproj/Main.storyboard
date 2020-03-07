@@ -15,21 +15,84 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aIW-0v-YPm">
+                                <rect key="frame" x="0.0" y="44" width="414" height="80"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qiV-ia-V1c">
+                                        <rect key="frame" x="0.0" y="0.0" width="80" height="80"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="80" id="tLU-xY-ecW"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                        <state key="normal" title="Play">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="playVideo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="krq-H3-1Px"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vb5-e8-tG7">
+                                        <rect key="frame" x="334" y="0.0" width="80" height="80"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="80" id="KeA-Rr-Shl"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                        <state key="normal" title="Save">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="saveVideo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="U9e-BK-FNH"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" red="0.12941176469999999" green="0.75686274509999996" blue="0.47843137250000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstItem="qiV-ia-V1c" firstAttribute="leading" secondItem="aIW-0v-YPm" secondAttribute="leading" id="4P2-ob-cHw"/>
+                                    <constraint firstItem="qiV-ia-V1c" firstAttribute="top" secondItem="aIW-0v-YPm" secondAttribute="top" id="7IM-VP-kJC"/>
+                                    <constraint firstAttribute="bottom" secondItem="qiV-ia-V1c" secondAttribute="bottom" id="VdI-jY-U56"/>
+                                    <constraint firstAttribute="height" constant="80" id="bOH-sQ-Jit"/>
+                                    <constraint firstItem="vb5-e8-tG7" firstAttribute="top" secondItem="aIW-0v-YPm" secondAttribute="top" id="eQc-p6-yPB"/>
+                                    <constraint firstAttribute="trailing" secondItem="vb5-e8-tG7" secondAttribute="trailing" id="uK7-ON-Tb6"/>
+                                    <constraint firstAttribute="bottom" secondItem="vb5-e8-tG7" secondAttribute="bottom" id="xr6-QR-Uns"/>
+                                </constraints>
+                            </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pay-hJ-1c3">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="782"/>
+                                <rect key="frame" x="0.0" y="124" width="414" height="658"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tGr-rT-8a9" customClass="MetalView" customModule="VideoProcessing" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="241" width="414" height="300"/>
+                                        <rect key="frame" x="0.0" y="179" width="414" height="300"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="300" id="U1z-nH-5Y2"/>
                                         </constraints>
                                     </view>
+                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9QT-Kx-3Jo">
+                                        <rect key="frame" x="0.0" y="179" width="414" height="300"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="play.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Rnw-ls-acQ">
+                                                <rect key="frame" x="182" y="125.5" width="50" height="49"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="50" id="7AB-fC-bWV"/>
+                                                    <constraint firstAttribute="width" constant="50" id="sqZ-mQ-41w"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="Rnw-ls-acQ" firstAttribute="centerY" secondItem="9QT-Kx-3Jo" secondAttribute="centerY" id="0B0-rr-9QT"/>
+                                            <constraint firstItem="Rnw-ls-acQ" firstAttribute="centerX" secondItem="9QT-Kx-3Jo" secondAttribute="centerX" id="qaR-Nc-JGs"/>
+                                        </constraints>
+                                    </view>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
+                                    <constraint firstItem="9QT-Kx-3Jo" firstAttribute="trailing" secondItem="tGr-rT-8a9" secondAttribute="trailing" id="3KL-ux-bKL"/>
+                                    <constraint firstItem="9QT-Kx-3Jo" firstAttribute="bottom" secondItem="tGr-rT-8a9" secondAttribute="bottom" id="Dn7-2G-a6g"/>
+                                    <constraint firstItem="9QT-Kx-3Jo" firstAttribute="leading" secondItem="tGr-rT-8a9" secondAttribute="leading" id="JH2-IU-PVS"/>
                                     <constraint firstItem="tGr-rT-8a9" firstAttribute="leading" secondItem="Pay-hJ-1c3" secondAttribute="leading" id="Nie-nn-iWf"/>
                                     <constraint firstAttribute="trailing" secondItem="tGr-rT-8a9" secondAttribute="trailing" id="dnW-Ze-IQH"/>
+                                    <constraint firstItem="9QT-Kx-3Jo" firstAttribute="top" secondItem="tGr-rT-8a9" secondAttribute="top" id="fie-80-Pqt"/>
                                     <constraint firstItem="tGr-rT-8a9" firstAttribute="centerY" secondItem="Pay-hJ-1c3" secondAttribute="centerY" id="vKp-YZ-PeJ"/>
                                 </constraints>
                             </view>
@@ -135,13 +198,16 @@
                         </subviews>
                         <color key="backgroundColor" red="0.12941176469999999" green="0.75686274509999996" blue="0.47843137250000001" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
+                            <constraint firstItem="Pay-hJ-1c3" firstAttribute="top" secondItem="aIW-0v-YPm" secondAttribute="bottom" id="0Hy-8I-MJb"/>
                             <constraint firstItem="euK-IL-UIc" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="FG7-6Z-xki"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="euK-IL-UIc" secondAttribute="trailing" id="RrW-Zz-lLs"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="euK-IL-UIc" secondAttribute="bottom" id="U1T-81-lAA"/>
                             <constraint firstAttribute="trailing" secondItem="Pay-hJ-1c3" secondAttribute="trailing" id="WES-fW-9ea"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="aIW-0v-YPm" secondAttribute="trailing" id="XLc-zK-ZCO"/>
                             <constraint firstItem="Pay-hJ-1c3" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="rbY-ON-C0E"/>
                             <constraint firstItem="euK-IL-UIc" firstAttribute="top" secondItem="Pay-hJ-1c3" secondAttribute="bottom" id="uiO-DC-1xe"/>
-                            <constraint firstItem="Pay-hJ-1c3" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="yms-tL-xY7"/>
+                            <constraint firstItem="aIW-0v-YPm" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="xWA-hV-9RD"/>
+                            <constraint firstItem="aIW-0v-YPm" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="ysi-8e-7ck"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
@@ -159,4 +225,7 @@
             <point key="canvasLocation" x="137.68115942028987" y="137.94642857142856"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="play.circle" catalog="system" width="64" height="60"/>
+    </resources>
 </document>

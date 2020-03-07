@@ -18,6 +18,10 @@ final class MainViewController: UIViewController {
     var firstPlayerItem: AVPlayerItem!
     var secondPlayerItem: AVPlayerItem!
     var overlapDuration: Float = 3.0
+    var firstVideoUrl: URL?
+    var secondVideoUrl: URL?
+    
+    var didSelectVideo: ((URL) -> ())?
     
     lazy var firstPlayerItemVideoOutput: AVPlayerItemVideoOutput = {
         let attributes = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
@@ -39,6 +43,7 @@ final class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        preparePlayerItem()
     }
     
     deinit {
@@ -86,6 +91,23 @@ final class MainViewController: UIViewController {
         }
     }
     
+    private func preparePlayerItem() {
+        guard let firstUrl = firstVideoUrl else { return }
+        let firstAsset = AVURLAsset(url: firstUrl)
+        firstPlayerItem = AVPlayerItem(asset: firstAsset)
+        firstPlayerItem.add(firstPlayerItemVideoOutput)
+        firstPlayer.replaceCurrentItem(with: firstPlayerItem)
+        
+        guard let secondUrl = secondVideoUrl else { return }
+        let secondAsset = AVURLAsset(url: secondUrl)
+        secondPlayerItem = AVPlayerItem(asset: secondAsset)
+        secondPlayerItem.add(secondPlayerItemVideoOutput)
+        secondPlayer.replaceCurrentItem(with: secondPlayerItem)
+        
+        metalView.overlapDuration = self.overlapDuration
+        
+    }
+    
 
     // MARK: - Outlet and Action
     
@@ -97,29 +119,25 @@ final class MainViewController: UIViewController {
     
     @IBOutlet weak var metalView: MetalView!
     
-    @IBAction func addPhoto(_ sender: Any) {
-        
-        guard let firstUrl = Bundle.main.url(forResource: "first", withExtension: "mp4") else { return }
-        let firstAsset = AVURLAsset(url: firstUrl)
-        firstPlayerItem = AVPlayerItem(asset: firstAsset)
-        firstPlayerItem.add(firstPlayerItemVideoOutput)
-        firstPlayer.replaceCurrentItem(with: firstPlayerItem)
-        
-        guard let secondUrl = Bundle.main.url(forResource: "second", withExtension: "mp4") else { return }
-        let secondAsset = AVURLAsset(url: secondUrl)
-        secondPlayerItem = AVPlayerItem(asset: secondAsset)
-        secondPlayerItem.add(secondPlayerItemVideoOutput)
-        secondPlayer.replaceCurrentItem(with: secondPlayerItem)
-        
-        metalView.overlapDuration = self.overlapDuration
-        
+    @IBAction func playVideo(_ sender: Any) {
+        preparePlayerItem()
+        metalView.videoMaker.startSession()
+        firstPlayer.play()
         displayLink.isPaused = false
-        
-        if let button = sender as? UIButton, button === leftButton {
-            firstPlayer.play()
+    }
+    
+    @IBAction func saveVideo(_ sender: Any) {
+        metalView.videoMaker.finishSession()
+    }
+    
+    @IBAction func addPhoto(_ sender: Any) {
+        guard let button = sender as? UIButton else { fatalError() }
+        if button === leftButton {
+            didSelectVideo = { [weak self] in self?.firstVideoUrl = $0 }
         } else {
-            secondPlayer.play()
+            didSelectVideo = { [weak self] in self?.secondVideoUrl = $0 }
         }
+        openVideoBrowser(sourceType: .savedPhotosAlbum, delegate: self)
         
     }
     

@@ -32,6 +32,19 @@ final class MetalView: MTKView {
     private var textureCache: CVMetalTextureCache?
     private var commandQueue: MTLCommandQueue
     private var computePipelineState: MTLComputePipelineState
+    var videoMaker: MetalVideoMaker!
+    var formatter: DateFormatter = {
+       let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'"
+        return formatter
+    }()
+    
+    var videoPath: URL {
+        let date = Date()
+        let documentPath = NSTemporaryDirectory()
+        let path = "\(documentPath)/\(formatter.string(from: date)).mp4"
+        return URL(fileURLWithPath: path)
+    }
     
     required init(coder: NSCoder) {
         let device = MTLCreateSystemDefaultDevice()!
@@ -55,8 +68,9 @@ final class MetalView: MTKView {
         }
         
         lanczos = MPSImageLanczosScale(device: device)
-        
         super.init(coder: coder)
+        
+        videoMaker = MetalVideoMaker(url: videoPath, size: self.drawableSize)
         
         self.device = device
         
@@ -71,8 +85,6 @@ final class MetalView: MTKView {
         self.isPaused = true
         
         self.contentScaleFactor = UIScreen.main.scale
-        
-//        self.drawableSize = CGSize(width: 1920, height: 1080)
     }
     
     override func draw(_ rect: CGRect) {
@@ -107,8 +119,8 @@ final class MetalView: MTKView {
     
     private func render(_ view: MTKView) {
         
-        let commandBuffer = commandQueue.makeCommandBuffer()
-        let computeCommandEncoder = commandBuffer?.makeComputeCommandEncoder()
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
+        let computeCommandEncoder = commandBuffer.makeComputeCommandEncoder()
         computeCommandEncoder?.setComputePipelineState(computePipelineState)
         
         
@@ -148,11 +160,31 @@ final class MetalView: MTKView {
             var texture: MTLTexture? = drawable.texture
             
             let kernel = MPSImageGaussianBlur(device: device!, sigma: time)
-            kernel.encode(commandBuffer: commandBuffer!, inPlaceTexture: &texture!, fallbackCopyAllocator: nil)
+            kernel.encode(commandBuffer: commandBuffer, inPlaceTexture: &texture!, fallbackCopyAllocator: nil)
+        }
+
+        if let sharedModeTexture = copyToSharedModeTexture(from: drawable.texture, commandBuffer: commandBuffer) {
+            commandBuffer.addCompletedHandler({ _ in
+                self.videoMaker.writeFrame(sharedModeTexture)
+            })
         }
         
-        commandBuffer?.present(drawable)
-        commandBuffer?.commit()
+
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
+    }
+    
+    private func copyToSharedModeTexture(from sourceTexture: MTLTexture, commandBuffer: MTLCommandBuffer) -> MTLTexture? {
+        let blitCommandEncoder = commandBuffer.makeBlitCommandEncoder()
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: sourceTexture.pixelFormat, width: sourceTexture.width, height: sourceTexture.height, mipmapped: true)
+        
+        guard let copyTexture = device?.makeTexture(descriptor: textureDescriptor) else {
+            return nil
+        }
+        
+        blitCommandEncoder?.copy(from: sourceTexture, to: copyTexture)
+        blitCommandEncoder?.endEncoding()
+        return copyTexture
     }
     
     private func transformToDescTexture(_ texture: MTLTexture, descTexture: inout MTLTexture?, contentMode: UIView.ContentMode) {
