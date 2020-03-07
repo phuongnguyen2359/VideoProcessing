@@ -46,8 +46,34 @@ final class MainViewController: UIViewController {
         preparePlayerItem()
     }
     
+    func addObserver() {
+        NotificationCenter.default.addObserver(self, selector: #selector(secondVideoDidPlayToEnd), name: .AVPlayerItemDidPlayToEndTime, object: secondPlayer.currentItem)
+        NotificationCenter.default.addObserver(self, selector: #selector(firstVideoDidPlayToEnd), name: .AVPlayerItemDidPlayToEndTime, object: firstPlayer.currentItem)
+    }
+    
+    func removeObserver() {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc func secondVideoDidPlayToEnd() {
+        print("second did end")
+        removeObserver()
+        if isRecording {
+            metalView.videoMaker?.finishSession()
+        }
+    }
+    @objc func firstVideoDidPlayToEnd() {
+        print("first did end")
+        firstPlayer.pause()
+        removeObserver()
+        if isRecording {
+            metalView.videoMaker?.finishSession()
+        }
+    }
+    
     deinit {
         displayLink.invalidate()
+        removeObserver()
     }
 
     private func setupUI() {
@@ -72,18 +98,27 @@ final class MainViewController: UIViewController {
         if secondPlayer.rate == 0 && ((firstPlayerItem.duration.seconds - firstVideoTime.seconds) <= Double(self.overlapDuration)) {
             secondPlayer.play()
         }
-
-        if firstPlayer.rate != 0, firstPlayerItemVideoOutput.hasNewPixelBuffer(forItemTime: firstVideoTime) {
-            
-            firstPixelBuffer = firstPlayerItemVideoOutput.copyPixelBuffer(forItemTime: firstVideoTime, itemTimeForDisplay: nil)
-            self.metalView.firstPixelBuffer = firstPixelBuffer
+        if firstPlayer.rate != 0 {
+            if firstPlayerItemVideoOutput.hasNewPixelBuffer(forItemTime: firstVideoTime) {
+                firstPixelBuffer = firstPlayerItemVideoOutput.copyPixelBuffer(forItemTime: firstVideoTime, itemTimeForDisplay: nil)
+                self.metalView.firstPixelBuffer = firstPixelBuffer
+            }
             self.metalView.firstVidRemainTime = firstPlayerItem.duration.seconds - firstVideoTime.seconds
+        } else {
+            self.metalView.firstPixelBuffer = nil
+            self.metalView.firstVidRemainTime = 0
         }
         
-        if secondPlayer.rate != 0, secondPlayerItemVideoOutput.hasNewPixelBuffer(forItemTime: secondVideoTime) {
-            secondPixelBuffer = secondPlayerItemVideoOutput.copyPixelBuffer(forItemTime: secondVideoTime, itemTimeForDisplay: nil)
-            self.metalView.secondPixelBuffer = secondPixelBuffer
+        if secondPlayer.rate != 0 {
+            if secondPlayerItemVideoOutput.hasNewPixelBuffer(forItemTime: secondVideoTime) {
+                secondPixelBuffer = secondPlayerItemVideoOutput.copyPixelBuffer(forItemTime: secondVideoTime, itemTimeForDisplay: nil)
+                self.metalView.secondPixelBuffer = secondPixelBuffer
+            }
+            
             self.metalView.secondVidRemainTime = secondPlayerItem.duration.seconds - secondVideoTime.seconds
+        } else {
+            self.metalView.secondPixelBuffer = nil
+            self.metalView.secondVidRemainTime = 0
         }
         
         if firstPixelBuffer != nil || secondPixelBuffer != nil {
@@ -134,13 +169,20 @@ final class MainViewController: UIViewController {
     
     @IBAction func playVideo(_ sender: Any) {
         preparePlayerItem()
-        metalView.videoMaker.startSession()
+        metalView.videoMaker?.startSession()
         firstPlayer.play()
         displayLink.isPaused = false
     }
     
     @IBAction func saveVideo(_ sender: Any) {
-        metalView.videoMaker.finishSession()
+        do {
+            try prepareRecording()
+        } catch {
+            print(error)
+        }
+        
+        
+        
     }
     
     @IBAction func addPhoto(_ sender: Any) {

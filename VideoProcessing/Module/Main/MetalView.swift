@@ -32,7 +32,7 @@ final class MetalView: MTKView {
     private var textureCache: CVMetalTextureCache?
     private var commandQueue: MTLCommandQueue
     private var computePipelineState: MTLComputePipelineState
-    var videoMaker: MetalVideoMaker!
+    var videoMaker: MetalVideoMaker?
     var formatter: DateFormatter = {
        let formatter = DateFormatter()
         formatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'"
@@ -69,8 +69,6 @@ final class MetalView: MTKView {
         
         lanczos = MPSImageLanczosScale(device: device)
         super.init(coder: coder)
-        
-        videoMaker = MetalVideoMaker(url: videoPath, size: self.drawableSize)
         
         self.device = device
         
