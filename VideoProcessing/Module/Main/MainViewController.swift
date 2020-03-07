@@ -17,7 +17,7 @@ final class MainViewController: UIViewController {
     let secondPlayer: AVPlayer = AVPlayer()
     var firstPlayerItem: AVPlayerItem!
     var secondPlayerItem: AVPlayerItem!
-    var overlapDuration: Float = 3.0
+    var overlapDuration: Float = Constant.maxOverlapDuration
     var firstVideoUrl: URL?
     var secondVideoUrl: URL?
     
@@ -119,6 +119,19 @@ final class MainViewController: UIViewController {
     
     @IBOutlet weak var metalView: MetalView!
     
+    @IBAction func showTransitionOption(_ sender: Any) {
+        let transionOptionVC = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(identifier: "TransitionOptionViewController") as! TransitionOptionViewController
+        transionOptionVC.delegate = self
+        _ = transionOptionVC.view
+        transionOptionVC.slider.setValue(metalView.overlapDuration, animated: false)
+        transionOptionVC.slider.value = metalView.overlapDuration
+        transionOptionVC.modalPresentationStyle = .popover
+        transionOptionVC.popoverPresentationController?.sourceView = optionButton
+        self.present(transionOptionVC, animated: true, completion: nil)
+    }
+    
+    @IBOutlet weak var optionButton: UIButton!
+    
     @IBAction func playVideo(_ sender: Any) {
         preparePlayerItem()
         metalView.videoMaker.startSession()
@@ -141,4 +154,10 @@ final class MainViewController: UIViewController {
         
     }
     
+}
+
+extension MainViewController: TransitionOptionViewControllerDelegate {
+    func didChangeDurationValue(to value: Float) {
+        self.overlapDuration = value
+    }
 }

@@ -27,7 +27,7 @@ final class MetalView: MTKView {
     
     var lanczos: MPSImageLanczosScale
     
-    var overlapDuration: Float = 3
+    var overlapDuration: Float = Constant.maxOverlapDuration
     
     private var textureCache: CVMetalTextureCache?
     private var commandQueue: MTLCommandQueue
