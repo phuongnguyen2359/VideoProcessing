@@ -72,7 +72,10 @@ final class MetalVideoMaker {
         let frameTime = CACurrentMediaTime() - startTime
         
         let presentationTime = CMTimeMakeWithSeconds(frameTime, preferredTimescale: 240)
-        assetWriterInputPixelBufferAdapter.append(certainPixelBuffer, withPresentationTime: presentationTime)
+        if assetWriterInput.isReadyForMoreMediaData {
+            assetWriterInputPixelBufferAdapter.append(certainPixelBuffer, withPresentationTime: presentationTime)
+        }
+        
         CVPixelBufferUnlockBaseAddress(certainPixelBuffer, [])
     }
 }

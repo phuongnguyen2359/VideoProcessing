@@ -136,7 +136,7 @@ final class MetalView: MTKView {
     }
     
     private func render(_ view: MTKView) {
-        
+        let supportedContentMode = SupportedContentMode.createFromUIViewContentMode(contentMode) ?? SupportedContentMode.scaleAspectFit
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
         let computeCommandEncoder = commandBuffer.makeComputeCommandEncoder()
         
@@ -144,14 +144,14 @@ final class MetalView: MTKView {
         computeCommandEncoder?.setComputePipelineState(fadingComputePipelineState)
         let firstVideoTexture = getMetalTexture(from: firstPixelBuffer)
         if let texture = firstVideoTexture {
-            transformToDescTexture(texture, descTexture: &firstTransformedTexture, contentMode: contentMode)
+            transformToDescTexture(texture, descTexture: &firstTransformedTexture, supportedContentMode: supportedContentMode)
         }
         computeCommandEncoder?.setTexture(firstTransformedTexture, index: 0)
         
     
         let secondVideoTexture = getMetalTexture(from: secondPixelBuffer)
         if let texture = secondVideoTexture {
-            transformToDescTexture(texture, descTexture: &secondTransformedTexture, contentMode: contentMode)
+            transformToDescTexture(texture, descTexture: &secondTransformedTexture, supportedContentMode: supportedContentMode)
         }
         computeCommandEncoder?.setTexture(secondTransformedTexture, index: 1)
         
@@ -206,23 +206,27 @@ final class MetalView: MTKView {
         commandBuffer.commit()
     }
     
-    func writeFrame(firstVideoTexture: MTLTexture?, secondVideoTexture: MTLTexture?) {
+    func writeFrame(firstVideoTexture: MTLTexture?, secondVideoTexture: MTLTexture?, supportedContentMode: SupportedContentMode) {
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
         
         let computeCommandEncoder = commandBuffer.makeComputeCommandEncoder()
         computeCommandEncoder?.setComputePipelineState(fadingComputePipelineState)
         
         
+        let transformTextureDescriptor1 = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: true)
+        var transformedTexture1 = device?.makeTexture(descriptor: transformTextureDescriptor1)
         if let texture = firstVideoTexture {
-            transformToDescTexture(texture, descTexture: &firstTransformedTexture, contentMode: contentMode)
+            transformToDescTexture(texture, descTexture: &transformedTexture1, supportedContentMode: supportedContentMode)
         }
-        computeCommandEncoder?.setTexture(firstTransformedTexture, index: 0)
+        computeCommandEncoder?.setTexture(transformedTexture1, index: 0)
         
+        let transformTextureDescriptor2 = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: true)
+        var transformedTexture2 = device?.makeTexture(descriptor: transformTextureDescriptor2)
         let secondVideoTexture = getMetalTexture(from: secondPixelBuffer)
         if let texture = secondVideoTexture {
-            transformToDescTexture(texture, descTexture: &secondTransformedTexture, contentMode: contentMode)
+            transformToDescTexture(texture, descTexture: &transformedTexture2, supportedContentMode: supportedContentMode)
         }
-        computeCommandEncoder?.setTexture(secondTransformedTexture, index: 1)
+        computeCommandEncoder?.setTexture(transformedTexture2, index: 1)
         
         let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: true)
         outTextureDescriptor.usage = [.shaderRead, .shaderWrite]
@@ -264,7 +268,7 @@ final class MetalView: MTKView {
         return copyTexture
     }
     
-    private func transformToDescTexture(_ texture: MTLTexture, descTexture: inout MTLTexture?, contentMode: UIView.ContentMode) {
+    private func transformToDescTexture(_ texture: MTLTexture, descTexture: inout MTLTexture?, supportedContentMode: SupportedContentMode) {
         let defaultDevice = Renderer.sharedInstance.device
         guard let desc = currentDrawable?.texture else {
             return
@@ -274,7 +278,7 @@ final class MetalView: MTKView {
             return
         }
         
-        var transform: MPSScaleTransform = texture.getScaleTransform(to: desc, contentMode: contentMode)
+        var transform: MPSScaleTransform = texture.getScaleTransform(to: desc, contentMode: supportedContentMode)
         
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: texture.pixelFormat, width: desc.width, height: desc.height, mipmapped: true)
         textureDescriptor.usage = [.shaderRead, .shaderWrite]

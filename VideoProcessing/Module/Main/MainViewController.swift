@@ -9,6 +9,7 @@
 import UIKit
 import AVFoundation
 import MetalKit
+import CoreFoundation
 
 final class MainViewController: UIViewController {
     
@@ -24,8 +25,8 @@ final class MainViewController: UIViewController {
     
     var firstVidAssetReader: AVAssetReader!
     var secondVidAssetReader: AVAssetReader!
-    var firstVidAssetOutput: AVAssetReaderVideoCompositionOutput!
-    var secondVidAssetOutput: AVAssetReaderVideoCompositionOutput!
+    var firstVidAssetOutput: AVAssetReaderTrackOutput!
+    var secondVidAssetOutput: AVAssetReaderTrackOutput!
     var textureCache: CVMetalTextureCache?
     
     var blurWeights = [BlurWeight]()
@@ -172,16 +173,24 @@ final class MainViewController: UIViewController {
         let secondAsset = AVAsset(url: secondURL)
         secondVidAssetReader = try AVAssetReader(asset: secondAsset)
         
-        firstVidAssetOutput = AVAssetReaderVideoCompositionOutput(videoTracks: firstAsset.tracks(withMediaType: .video),
-                                                                  videoSettings: nil)
-        firstVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: firstAsset)
-        firstVidAssetReader.add(firstVidAssetOutput)
+        let videoReaderSetting: [String: Any] = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB
+        ]
+        firstVidAssetOutput = AVAssetReaderTrackOutput(track: firstAsset.tracks(withMediaType: .video).first!, outputSettings: videoReaderSetting)
         
-        secondVidAssetOutput = AVAssetReaderVideoCompositionOutput(videoTracks: secondAsset.tracks(withMediaType: .video),
-                                                                   videoSettings: nil)
-        secondVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: secondAsset)
-        secondVidAssetReader.add(secondVidAssetOutput)
+//        firstVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: firstAsset)
+        if firstVidAssetReader.canAdd(firstVidAssetOutput) {
+            firstVidAssetReader.add(firstVidAssetOutput)
+        } else {
+            fatalError()
+        }
         
+        secondVidAssetOutput = AVAssetReaderTrackOutput(track: secondAsset.tracks(withMediaType: .video).first!,
+                                                                   outputSettings: videoReaderSetting)
+//        secondVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: secondAsset)
+        if secondVidAssetReader.canAdd(secondVidAssetOutput) {
+            secondVidAssetReader.add(secondVidAssetOutput)
+        } else { fatalError() }
         CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, Renderer.sharedInstance.device, nil, &textureCache)
     }
     
@@ -234,60 +243,70 @@ final class MainViewController: UIViewController {
     }
     
     @IBAction func saveVideo(_ sender: Any) {
+        let contentMode = SupportedContentMode.createFromUIViewContentMode(metalView.contentMode) ?? SupportedContentMode.scaleAspectFit
+        self.metalView.prepareForSaveVideo()
+        self.metalView.videoMaker?.startSession()
+        
         DispatchQueue.global().async {
              do {
                 try self.prepareRecording()
-                       
+                
                 self.firstVidAssetReader.startReading()
                 self.secondVidAssetReader.startReading()
                        
-                       var isStartReadingSecondVid = false
-                       var firstVidToEnd = false
-                       var secondVidToEnd = false
-                       var firstTexture: MTLTexture?
-                       var secondTexture: MTLTexture?
+                var isStartReadingSecondVid = false
+                var firstVidToEnd = false
+                var secondVidToEnd = false
+                var firstTexture: MTLTexture?
+                var secondTexture: MTLTexture?
                        
                 guard let firstUrl = self.firstVideoUrl, let secondUrl = self.secondVideoUrl else { return }
-                       let firstDuration = AVAsset(url: firstUrl).duration
-                       let secondDuration = AVAsset(url: secondUrl).duration
+                let firstDuration = AVAsset(url: firstUrl).duration
+                let secondDuration = AVAsset(url: secondUrl).duration
                        
-                       while !firstVidToEnd || !secondVidToEnd {
+                while !firstVidToEnd || !secondVidToEnd {
+                    autoreleasepool {
                         if let firstSample = self.firstVidAssetOutput.copyNextSampleBuffer() {
-                               let currentTimeStamp = firstSample.presentationTimeStamp
-                               if (firstDuration.seconds - currentTimeStamp.seconds) <= Double(self.overlapDuration) {
-                                   isStartReadingSecondVid = true
-                               }
+                            
+                            let currentTimeStamp = firstSample.presentationTimeStamp
+                            if (firstDuration.seconds - currentTimeStamp.seconds) <= Double(self.overlapDuration) {
+                                isStartReadingSecondVid = true
+                            }
                             if let firstFrame = self.getTexture(from: firstSample) {
-                                   self.metalView.firstVidRemainTime = firstDuration.seconds - currentTimeStamp.seconds
-                                   firstTexture = firstFrame
-                               }
-                           } else {
-                               firstVidToEnd = true
-                           }
-                           
-                           if isStartReadingSecondVid {
+                                self.metalView.firstVidRemainTime = firstDuration.seconds - currentTimeStamp.seconds
+                                firstTexture = firstFrame
+                            }
+                        } else {
+                            firstVidToEnd = true
+                        }
+                               
+                        if isStartReadingSecondVid {
                             if let secondSample = self.secondVidAssetOutput.copyNextSampleBuffer() {
-                                   let currentTimeStamp = secondSample.presentationTimeStamp
+                                let currentTimeStamp = secondSample.presentationTimeStamp
                                 if let secondFrame = self.getTexture(from: secondSample) {
-                                       self.metalView.secondVidRemainTime = secondDuration.seconds - currentTimeStamp.seconds
-                                       secondTexture = secondFrame
-                                   }
-                               } else {
-                                   secondVidToEnd = true
-                               }
-                           }
-                           
-                           self.metalView.writeFrame(firstVideoTexture: firstTexture, secondVideoTexture: secondTexture)
-                       }
+                                    self.metalView.secondVidRemainTime = secondDuration.seconds - currentTimeStamp.seconds
+                                    secondTexture = secondFrame
+                                }
+                            } else {
+                                secondVidToEnd = true
+                            }
+                        }
+                               
+                        self.metalView.writeFrame(firstVideoTexture: firstTexture, secondVideoTexture: secondTexture, supportedContentMode: contentMode)
+                    }
+                    
+                    
+                }
+                self.metalView.videoMaker?.finishSession()
+                self.metalView.videoMaker = nil
+                self.firstVidAssetReader.cancelReading()
+                self.secondVidAssetReader.cancelReading()
                        
-                       self.metalView.videoMaker?.finishSession()
                 print("fishnish save")
                        
-                   } catch {
-                       print(error)
-                   }
-                   
-                   
+            } catch {
+                print(error)
+            }
                    
         }
     }

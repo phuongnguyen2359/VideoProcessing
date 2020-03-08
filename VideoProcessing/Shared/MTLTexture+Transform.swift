@@ -10,8 +10,24 @@ import Metal
 import UIKit
 import MetalPerformanceShaders
 
+enum SupportedContentMode {
+    case scaleAspectFill
+    case scaleAspectFit
+    case scaleToFill
+    
+    static func createFromUIViewContentMode(_ contentMode: UIView.ContentMode) -> SupportedContentMode? {
+        switch contentMode {
+        case .scaleAspectFill: return .scaleAspectFill
+        case .scaleAspectFit: return .scaleAspectFit
+        case .scaleToFill: return .scaleToFill
+        default: return nil
+            
+        }
+    }
+}
+
 extension MTLTexture {
-    func getScaleTransform(to texture: MTLTexture, contentMode: UIView.ContentMode) -> MPSScaleTransform {
+    func getScaleTransform(to texture: MTLTexture, contentMode: SupportedContentMode) -> MPSScaleTransform {
         
         var scaleX: Double
         var scaleY: Double
@@ -38,9 +54,6 @@ extension MTLTexture {
             } else {
                 scaleY = scaleX
             }
-        default:
-            scaleX = 1
-            scaleY = 1
         }
         
         let translateX: Double = (Double(texture.width) - Double(self.width) * scaleX) / 2
