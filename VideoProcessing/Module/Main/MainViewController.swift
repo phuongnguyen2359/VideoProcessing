@@ -20,6 +20,15 @@ final class MainViewController: UIViewController {
     var overlapDuration: Float = Constant.maxOverlapDuration
     var firstVideoUrl: URL?
     var secondVideoUrl: URL?
+    var isRecording = false
+    
+    var firstVidAssetReader: AVAssetReader!
+    var secondVidAssetReader: AVAssetReader!
+    var firstVidAssetOutput: AVAssetReaderVideoCompositionOutput!
+    var secondVidAssetOutput: AVAssetReaderVideoCompositionOutput!
+    var textureCache: CVMetalTextureCache?
+    
+    var blurWeights = [BlurWeight]()
     
     var didSelectVideo: ((URL) -> ())?
     
@@ -44,6 +53,14 @@ final class MainViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         preparePlayerItem()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        guard blurWeights.isEmpty else { return }
+        setupBlurWeights()
+        metalView.blurWeights = blurWeights
     }
     
     func addObserver() {
@@ -89,7 +106,9 @@ final class MainViewController: UIViewController {
         var secondVideoTime = CMTime.invalid
         
         let nextVSync = sender.timestamp + sender.duration
+        
         firstVideoTime = firstPlayerItemVideoOutput.itemTime(forHostTime: nextVSync)
+        
         secondVideoTime = secondPlayerItemVideoOutput.itemTime(forHostTime: nextVSync)
         
         var firstPixelBuffer: CVPixelBuffer?
@@ -138,11 +157,51 @@ final class MainViewController: UIViewController {
         secondPlayerItem = AVPlayerItem(asset: secondAsset)
         secondPlayerItem.add(secondPlayerItemVideoOutput)
         secondPlayer.replaceCurrentItem(with: secondPlayerItem)
+        removeObserver()
+        addObserver()
         
         metalView.overlapDuration = self.overlapDuration
         
     }
     
+    private func prepareRecording() throws {
+        guard let firstURL = firstVideoUrl, let secondURL = secondVideoUrl else { return }
+        let firstAsset = AVAsset(url: firstURL)
+        firstVidAssetReader = try AVAssetReader(asset: firstAsset)
+        
+        let secondAsset = AVAsset(url: secondURL)
+        secondVidAssetReader = try AVAssetReader(asset: secondAsset)
+        
+        firstVidAssetOutput = AVAssetReaderVideoCompositionOutput(videoTracks: firstAsset.tracks(withMediaType: .video),
+                                                                  videoSettings: nil)
+        firstVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: firstAsset)
+        firstVidAssetReader.add(firstVidAssetOutput)
+        
+        secondVidAssetOutput = AVAssetReaderVideoCompositionOutput(videoTracks: secondAsset.tracks(withMediaType: .video),
+                                                                   videoSettings: nil)
+        secondVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: secondAsset)
+        secondVidAssetReader.add(secondVidAssetOutput)
+        
+        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, Renderer.sharedInstance.device, nil, &textureCache)
+    }
+    
+    private func getTexture(from sampleBuffer: CMSampleBuffer) -> MTLTexture? {
+        if let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+
+            let width = CVPixelBufferGetWidth(imageBuffer)
+            let height = CVPixelBufferGetHeight(imageBuffer)
+
+            var texture: CVMetalTexture?
+            
+            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache!, imageBuffer, nil, MTLPixelFormat.bgra8Unorm, width, height, 0, &texture)
+          
+            if let texture = texture {
+                return CVMetalTextureGetTexture(texture)
+            }
+        }
+        
+        return nil
+    }
 
     // MARK: - Outlet and Action
     
@@ -175,14 +234,62 @@ final class MainViewController: UIViewController {
     }
     
     @IBAction func saveVideo(_ sender: Any) {
-        do {
-            try prepareRecording()
-        } catch {
-            print(error)
+        DispatchQueue.global().async {
+             do {
+                try self.prepareRecording()
+                       
+                self.firstVidAssetReader.startReading()
+                self.secondVidAssetReader.startReading()
+                       
+                       var isStartReadingSecondVid = false
+                       var firstVidToEnd = false
+                       var secondVidToEnd = false
+                       var firstTexture: MTLTexture?
+                       var secondTexture: MTLTexture?
+                       
+                guard let firstUrl = self.firstVideoUrl, let secondUrl = self.secondVideoUrl else { return }
+                       let firstDuration = AVAsset(url: firstUrl).duration
+                       let secondDuration = AVAsset(url: secondUrl).duration
+                       
+                       while !firstVidToEnd || !secondVidToEnd {
+                        if let firstSample = self.firstVidAssetOutput.copyNextSampleBuffer() {
+                               let currentTimeStamp = firstSample.presentationTimeStamp
+                               if (firstDuration.seconds - currentTimeStamp.seconds) <= Double(self.overlapDuration) {
+                                   isStartReadingSecondVid = true
+                               }
+                            if let firstFrame = self.getTexture(from: firstSample) {
+                                   self.metalView.firstVidRemainTime = firstDuration.seconds - currentTimeStamp.seconds
+                                   firstTexture = firstFrame
+                               }
+                           } else {
+                               firstVidToEnd = true
+                           }
+                           
+                           if isStartReadingSecondVid {
+                            if let secondSample = self.secondVidAssetOutput.copyNextSampleBuffer() {
+                                   let currentTimeStamp = secondSample.presentationTimeStamp
+                                if let secondFrame = self.getTexture(from: secondSample) {
+                                       self.metalView.secondVidRemainTime = secondDuration.seconds - currentTimeStamp.seconds
+                                       secondTexture = secondFrame
+                                   }
+                               } else {
+                                   secondVidToEnd = true
+                               }
+                           }
+                           
+                           self.metalView.writeFrame(firstVideoTexture: firstTexture, secondVideoTexture: secondTexture)
+                       }
+                       
+                       self.metalView.videoMaker?.finishSession()
+                print("fishnish save")
+                       
+                   } catch {
+                       print(error)
+                   }
+                   
+                   
+                   
         }
-        
-        
-        
     }
     
     @IBAction func addPhoto(_ sender: Any) {

@@ -27,11 +27,17 @@ final class MetalView: MTKView {
     
     var lanczos: MPSImageLanczosScale
     
+    var isRecording: Bool = false
+    
     var overlapDuration: Float = Constant.maxOverlapDuration
+    
+    var blurWeights = [BlurWeight]()
     
     private var textureCache: CVMetalTextureCache?
     private var commandQueue: MTLCommandQueue
-    private var computePipelineState: MTLComputePipelineState
+    private var fadingComputePipelineState: MTLComputePipelineState
+    private var blurComputePipelineState: MTLComputePipelineState
+    
     var videoMaker: MetalVideoMaker?
     var formatter: DateFormatter = {
        let formatter = DateFormatter()
@@ -47,30 +53,40 @@ final class MetalView: MTKView {
     }
     
     required init(coder: NSCoder) {
-        let device = MTLCreateSystemDefaultDevice()!
-        
-        self.commandQueue = device.makeCommandQueue()!
+        let defaultDevice: MTLDevice = Renderer.sharedInstance.device
+        self.commandQueue = Renderer.sharedInstance.commandQueue
         
         let bundle = Bundle.main
         let url = bundle.url(forResource: "default", withExtension: "metallib")
-        let library = try! device.makeLibrary(filepath: url!.path)
+        let library = try! Renderer.sharedInstance.device.makeLibrary(filepath: url!.path)
         
-        let function = library.makeFunction(name: "fading")!
+        let fadingFunction = library.makeFunction(name: "fading")!
+        do {
+            self.fadingComputePipelineState = try defaultDevice.makeComputePipelineState(function: fadingFunction)
+        } catch {
+            fatalError()
+        }
         
-        self.computePipelineState = try! device.makeComputePipelineState(function: function)
+        let blurFunction = library.makeFunction(name: "gaussian_blur")!
+        do {
+            self.blurComputePipelineState = try defaultDevice.makeComputePipelineState(function: blurFunction)
+        } catch {
+            fatalError()
+        }
+
         
         var textCache: CVMetalTextureCache?
         
-        if CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, device, nil, &textCache) != kCVReturnSuccess {
+        if CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, defaultDevice, nil, &textCache) != kCVReturnSuccess {
             fatalError("Unable to allocate texture cache")
         } else {
             self.textureCache = textCache
         }
         
-        lanczos = MPSImageLanczosScale(device: device)
+        lanczos = MPSImageLanczosScale(device: defaultDevice)
         super.init(coder: coder)
         
-        self.device = device
+        self.device = defaultDevice
         
         self.framebufferOnly = false
         
@@ -91,6 +107,10 @@ final class MetalView: MTKView {
                 self.render(self)
             }
         }
+    }
+    
+    func prepareForSaveVideo() {
+        self.videoMaker = MetalVideoMaker(url: videoPath, size: self.drawableSize)
     }
     
     private func getMetalTexture(from cvBuffer: CVPixelBuffer?) -> MTLTexture? {
@@ -119,9 +139,9 @@ final class MetalView: MTKView {
         
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
         let computeCommandEncoder = commandBuffer.makeComputeCommandEncoder()
-        computeCommandEncoder?.setComputePipelineState(computePipelineState)
         
-        
+        // Fading effect
+        computeCommandEncoder?.setComputePipelineState(fadingComputePipelineState)
         let firstVideoTexture = getMetalTexture(from: firstPixelBuffer)
         if let texture = firstVideoTexture {
             transformToDescTexture(texture, descTexture: &firstTransformedTexture, contentMode: contentMode)
@@ -135,8 +155,15 @@ final class MetalView: MTKView {
         }
         computeCommandEncoder?.setTexture(secondTransformedTexture, index: 1)
         
-        guard let drawable: CAMetalDrawable = self.currentDrawable else { return }
-        computeCommandEncoder?.setTexture(drawable.texture, index: 2)
+        
+        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat,
+                                                                            width: Int(drawableSize.width),
+                                                                            height: Int(drawableSize.height),
+                                                                            mipmapped: true)
+        
+        outTextureDescriptor.usage = [.shaderRead, .shaderWrite]
+        guard let outTexture = Renderer.sharedInstance.device.makeTexture(descriptor: outTextureDescriptor) else { return }
+        computeCommandEncoder?.setTexture(outTexture, index: 2)
         
         var time = Float(self.firstVidRemainTime!)
         computeCommandEncoder?.setBytes(&time, length: MemoryLayout<Float>.size, index: 0)
@@ -149,27 +176,79 @@ final class MetalView: MTKView {
         
         computeCommandEncoder?.setBytes(&overlapDuration, length: MemoryLayout<Float>.size, index: 3)
         
+        computeCommandEncoder?.dispatchThreadgroups(outTexture.threadGroups(), threadsPerThreadgroup: outTexture.threadGroupCount())
+        
+        
+        // Blur effect
+        computeCommandEncoder?.setComputePipelineState(blurComputePipelineState)
+        
+        
+        guard let drawable: CAMetalDrawable = self.currentDrawable else { return }
+        computeCommandEncoder?.setTexture(drawable.texture, index: 3)
+        
+        let index = Int(min(1, (1.0 - min(time / overlapDuration, 1))) * Float(blurWeights.count - 1))
+        let weight = blurWeights[index]
+        
+        let destTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r32Float, width: weight.size, height: weight.size, mipmapped: false)
+        guard let blurWeightTexture = device?.makeTexture(descriptor: destTextureDescriptor) else {
+            return
+        }
+        
+        let region = MTLRegionMake2D(0, 0, weight.size, weight.size);
+        blurWeightTexture.replace(region: region, mipmapLevel: 0, withBytes: weight.weights, bytesPerRow: MemoryLayout<Float>.size * weight.size)
+        computeCommandEncoder?.setTexture(blurWeightTexture, index: 4)
+        
         computeCommandEncoder?.dispatchThreadgroups(drawable.texture.threadGroups(), threadsPerThreadgroup: drawable.texture.threadGroupCount())
+        
+        
+        computeCommandEncoder?.endEncoding()
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
+    }
+    
+    func writeFrame(firstVideoTexture: MTLTexture?, secondVideoTexture: MTLTexture?) {
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
+        
+        let computeCommandEncoder = commandBuffer.makeComputeCommandEncoder()
+        computeCommandEncoder?.setComputePipelineState(fadingComputePipelineState)
+        
+        
+        if let texture = firstVideoTexture {
+            transformToDescTexture(texture, descTexture: &firstTransformedTexture, contentMode: contentMode)
+        }
+        computeCommandEncoder?.setTexture(firstTransformedTexture, index: 0)
+        
+        let secondVideoTexture = getMetalTexture(from: secondPixelBuffer)
+        if let texture = secondVideoTexture {
+            transformToDescTexture(texture, descTexture: &secondTransformedTexture, contentMode: contentMode)
+        }
+        computeCommandEncoder?.setTexture(secondTransformedTexture, index: 1)
+        
+        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: true)
+        outTextureDescriptor.usage = [.shaderRead, .shaderWrite]
+        guard let outTexture = Renderer.sharedInstance.device.makeTexture(descriptor: outTextureDescriptor) else { return }
+        computeCommandEncoder?.setTexture(outTexture, index: 2)
+        
+        var time = Float(self.firstVidRemainTime!)
+        computeCommandEncoder?.setBytes(&time, length: MemoryLayout<Float>.size, index: 0)
+        
+        var firstVidIsNill = firstVideoTexture == nil
+        computeCommandEncoder?.setBytes(&firstVidIsNill, length: MemoryLayout<Bool>.size, index: 1)
+        
+        var secondVidIsNill = secondVideoTexture == nil
+        computeCommandEncoder?.setBytes(&secondVidIsNill, length: MemoryLayout<Bool>.size, index: 2)
+        
+        computeCommandEncoder?.setBytes(&overlapDuration, length: MemoryLayout<Float>.size, index: 3)
+        
+        computeCommandEncoder?.dispatchThreadgroups(outTexture.threadGroups(), threadsPerThreadgroup: outTexture.threadGroupCount())
         
         computeCommandEncoder?.endEncoding()
         
-        // Blur effect
-        if firstVidRemainTime!.isLessThanOrEqualTo(Double(overlapDuration)){
-            var texture: MTLTexture? = drawable.texture
-            
-            let kernel = MPSImageGaussianBlur(device: device!, sigma: time)
-            kernel.encode(commandBuffer: commandBuffer, inPlaceTexture: &texture!, fallbackCopyAllocator: nil)
+        commandBuffer.addCompletedHandler { (_) in
+            self.videoMaker?.writeFrame(outTexture)
         }
-
-        if let sharedModeTexture = copyToSharedModeTexture(from: drawable.texture, commandBuffer: commandBuffer) {
-            commandBuffer.addCompletedHandler({ _ in
-                self.videoMaker.writeFrame(sharedModeTexture)
-            })
-        }
-        
-
-        commandBuffer.present(drawable)
         commandBuffer.commit()
+        
     }
     
     private func copyToSharedModeTexture(from sourceTexture: MTLTexture, commandBuffer: MTLCommandBuffer) -> MTLTexture? {
@@ -186,12 +265,12 @@ final class MetalView: MTKView {
     }
     
     private func transformToDescTexture(_ texture: MTLTexture, descTexture: inout MTLTexture?, contentMode: UIView.ContentMode) {
-        guard let device = device else { fatalError() }
+        let defaultDevice = Renderer.sharedInstance.device
         guard let desc = currentDrawable?.texture else {
             return
         }
         
-        guard texture.width != desc.width || texture.height != desc.height else {
+        guard texture.width != Int(drawableSize.width) || texture.height != Int(drawableSize.height) else {
             return
         }
         
@@ -199,7 +278,7 @@ final class MetalView: MTKView {
         
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: texture.pixelFormat, width: desc.width, height: desc.height, mipmapped: true)
         textureDescriptor.usage = [.shaderRead, .shaderWrite]
-        descTexture = device.makeTexture(descriptor: textureDescriptor)
+        descTexture = defaultDevice.makeTexture(descriptor: textureDescriptor)
         
         guard let descTexture = descTexture else { fatalError() }
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { fatalError() }

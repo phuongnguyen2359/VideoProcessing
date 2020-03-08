@@ -43,18 +43,8 @@ extension MTLTexture {
             scaleY = 1
         }
         
-        let translateX: Double
-        let translateY: Double
-        switch contentMode {
-        case .center, .scaleAspectFill, .scaleToFill, .scaleAspectFit:
-            translateX = (Double(texture.width) - Double(self.width) * scaleX) / 2
-            translateY = (Double(texture.height) - Double(self.height) * scaleY) / 2
-
-        default:
-            translateX = 0
-            translateY = 0
-        }
-        
+        let translateX: Double = (Double(texture.width) - Double(self.width) * scaleX) / 2
+        let translateY: Double = (Double(texture.height) - Double(self.height) * scaleY) / 2
         return MPSScaleTransform(scaleX: scaleX, scaleY: scaleY, translateX: translateX, translateY: translateY)
     }
     

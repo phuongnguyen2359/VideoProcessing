@@ -11,6 +11,8 @@
 		E11812472412E31D002D9F03 /* MetalVideoMaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11812462412E31D002D9F03 /* MetalVideoMaker.swift */; };
 		E118124A24138DF6002D9F03 /* TransitionOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E118124924138DF6002D9F03 /* TransitionOptionViewController.swift */; };
 		E118124C24139BFC002D9F03 /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = E118124B24139BFC002D9F03 /* Constant.swift */; };
+		E118124E24142C05002D9F03 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E118124D24142C05002D9F03 /* Renderer.swift */; };
+		E11812502414374F002D9F03 /* MainViewController+BlurWeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = E118124F2414374F002D9F03 /* MainViewController+BlurWeight.swift */; };
 		E13B8E28240F238B00FE6271 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E27240F238B00FE6271 /* MetalView.swift */; };
 		E13B8E2A240F28B400FE6271 /* ColorKernel.metal in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E29240F28B400FE6271 /* ColorKernel.metal */; };
 		E1A99BE0240EADC500D87C12 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BDF240EADC500D87C12 /* AppDelegate.swift */; };
@@ -28,6 +30,8 @@
 		E11812462412E31D002D9F03 /* MetalVideoMaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalVideoMaker.swift; sourceTree = "<group>"; };
 		E118124924138DF6002D9F03 /* TransitionOptionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionOptionViewController.swift; sourceTree = "<group>"; };
 		E118124B24139BFC002D9F03 /* Constant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
+		E118124D24142C05002D9F03 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
+		E118124F2414374F002D9F03 /* MainViewController+BlurWeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainViewController+BlurWeight.swift"; sourceTree = "<group>"; };
 		E13B8E27240F238B00FE6271 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		E13B8E29240F28B400FE6271 /* ColorKernel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ColorKernel.metal; sourceTree = "<group>"; };
 		E1A99BDC240EADC500D87C12 /* VideoProcessing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoProcessing.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,6 +102,7 @@
 				E1A99BF4240EBC9800D87C12 /* UIView+Decor.swift */,
 				E1B5BC5D241151360038EAAD /* MTLTexture+Transform.swift */,
 				E118124B24139BFC002D9F03 /* Constant.swift */,
+				E118124D24142C05002D9F03 /* Renderer.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -119,6 +124,7 @@
 				E13B8E27240F238B00FE6271 /* MetalView.swift */,
 				E11812442412D7A6002D9F03 /* MainViewController+OpenVideoLibrary.swift */,
 				E11812462412E31D002D9F03 /* MetalVideoMaker.swift */,
+				E118124F2414374F002D9F03 /* MainViewController+BlurWeight.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -198,7 +204,9 @@
 				E1A99BE4240EADC500D87C12 /* MainViewController.swift in Sources */,
 				E1A99BE0240EADC500D87C12 /* AppDelegate.swift in Sources */,
 				E11812452412D7A6002D9F03 /* MainViewController+OpenVideoLibrary.swift in Sources */,
+				E118124E24142C05002D9F03 /* Renderer.swift in Sources */,
 				E11812472412E31D002D9F03 /* MetalVideoMaker.swift in Sources */,
+				E11812502414374F002D9F03 /* MainViewController+BlurWeight.swift in Sources */,
 				E1B5BC5E241151360038EAAD /* MTLTexture+Transform.swift in Sources */,
 				E118124A24138DF6002D9F03 /* TransitionOptionViewController.swift in Sources */,
 				E13B8E2A240F28B400FE6271 /* ColorKernel.metal in Sources */,
