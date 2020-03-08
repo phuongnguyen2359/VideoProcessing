@@ -228,14 +228,14 @@ final class MetalView: MTKView {
         computeCommandEncoder?.setTexture(transformedTexture2, index: 1)
         
         
-        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat,
+        let fadedTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat,
                                                                             width: Int(drawableSize.width),
                                                                             height: Int(drawableSize.height),
                                                                             mipmapped: true)
         
-        outTextureDescriptor.usage = [.shaderRead, .shaderWrite]
-        guard let outTexture = Renderer.sharedInstance.device.makeTexture(descriptor: outTextureDescriptor) else { return }
-        computeCommandEncoder?.setTexture(outTexture, index: 2)
+        fadedTextureDescriptor.usage = [.shaderRead, .shaderWrite]
+        guard let fadedTexture = Renderer.sharedInstance.device.makeTexture(descriptor: fadedTextureDescriptor) else { return }
+        computeCommandEncoder?.setTexture(fadedTexture, index: 2)
         
         var time = Float(self.firstVidRemainTime!)
         computeCommandEncoder?.setBytes(&time, length: MemoryLayout<Float>.size, index: 0)
@@ -248,13 +248,41 @@ final class MetalView: MTKView {
         
         computeCommandEncoder?.setBytes(&overlapDuration, length: MemoryLayout<Float>.size, index: 3)
         
+        computeCommandEncoder?.dispatchThreadgroups(fadedTexture.threadGroups(), threadsPerThreadgroup: fadedTexture.threadGroupCount())
+        
+        // Blur effect
+        computeCommandEncoder?.setComputePipelineState(blurComputePipelineState)
+               
+               
+        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat,
+                                                                            width: Int(drawableSize.width),
+                                                                            height: Int(drawableSize.height),
+                                                                            mipmapped: true)
+        
+        outTextureDescriptor.usage = [.shaderRead, .shaderWrite]
+        guard let outTexture = Renderer.sharedInstance.device.makeTexture(descriptor: outTextureDescriptor) else { return }
+        computeCommandEncoder?.setTexture(outTexture, index: 3)
+               
+        let index = Int(min(1, (1.0 - min(time / overlapDuration, 1))) * Float(blurWeights.count - 1)) * 2
+        let weight = blurWeights[index >= blurWeights.count ? 2 * blurWeights.count - index - 1 : index]
+               
+        let destTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r32Float, width: weight.size, height: weight.size, mipmapped: false)
+        guard let blurWeightTexture = device?.makeTexture(descriptor: destTextureDescriptor) else {
+            return
+        }
+               
+        let region = MTLRegionMake2D(0, 0, weight.size, weight.size);
+        blurWeightTexture.replace(region: region, mipmapLevel: 0, withBytes: weight.weights, bytesPerRow: MemoryLayout<Float>.size * weight.size)
+        computeCommandEncoder?.setTexture(blurWeightTexture, index: 4)
+               
         computeCommandEncoder?.dispatchThreadgroups(outTexture.threadGroups(), threadsPerThreadgroup: outTexture.threadGroupCount())
+               
         
         computeCommandEncoder?.endEncoding()
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
         
-        self.videoMaker?.writeFrame(outTexture)
+        self.videoMaker?.writeFrame(fadedTexture)
     }
     
     private func copyToSharedModeTexture(from sourceTexture: MTLTexture, commandBuffer: MTLCommandBuffer) -> MTLTexture? {
