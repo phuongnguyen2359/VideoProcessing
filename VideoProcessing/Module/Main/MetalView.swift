@@ -206,13 +206,12 @@ final class MetalView: MTKView {
         commandBuffer.commit()
     }
     
-    func writeFrame(firstVideoTexture: MTLTexture?, secondVideoTexture: MTLTexture?, supportedContentMode: SupportedContentMode) {
+       func writeFrame(firstVideoTexture: MTLTexture?, secondVideoTexture: MTLTexture?, supportedContentMode: SupportedContentMode) {
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
-        
         let computeCommandEncoder = commandBuffer.makeComputeCommandEncoder()
         computeCommandEncoder?.setComputePipelineState(fadingComputePipelineState)
         
-        
+        // Fading effect
         let transformTextureDescriptor1 = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: true)
         var transformedTexture1 = device?.makeTexture(descriptor: transformTextureDescriptor1)
         if let texture = firstVideoTexture {
@@ -220,15 +219,20 @@ final class MetalView: MTKView {
         }
         computeCommandEncoder?.setTexture(transformedTexture1, index: 0)
         
+        
         let transformTextureDescriptor2 = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: true)
         var transformedTexture2 = device?.makeTexture(descriptor: transformTextureDescriptor2)
-        let secondVideoTexture = getMetalTexture(from: secondPixelBuffer)
         if let texture = secondVideoTexture {
             transformToDescTexture(texture, descTexture: &transformedTexture2, supportedContentMode: supportedContentMode)
         }
         computeCommandEncoder?.setTexture(transformedTexture2, index: 1)
         
-        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: true)
+        
+        let outTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: colorPixelFormat,
+                                                                            width: Int(drawableSize.width),
+                                                                            height: Int(drawableSize.height),
+                                                                            mipmapped: true)
+        
         outTextureDescriptor.usage = [.shaderRead, .shaderWrite]
         guard let outTexture = Renderer.sharedInstance.device.makeTexture(descriptor: outTextureDescriptor) else { return }
         computeCommandEncoder?.setTexture(outTexture, index: 2)
@@ -247,12 +251,10 @@ final class MetalView: MTKView {
         computeCommandEncoder?.dispatchThreadgroups(outTexture.threadGroups(), threadsPerThreadgroup: outTexture.threadGroupCount())
         
         computeCommandEncoder?.endEncoding()
-        
-        commandBuffer.addCompletedHandler { (_) in
-            self.videoMaker?.writeFrame(outTexture)
-        }
         commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
         
+        self.videoMaker?.writeFrame(outTexture)
     }
     
     private func copyToSharedModeTexture(from sourceTexture: MTLTexture, commandBuffer: MTLCommandBuffer) -> MTLTexture? {

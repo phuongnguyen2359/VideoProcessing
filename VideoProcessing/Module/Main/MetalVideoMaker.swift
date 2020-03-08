@@ -24,10 +24,21 @@ final class MetalVideoMaker {
             return nil
         }
         
+    
+        let compressionSettings = [
+                                              AVVideoAverageBitRateKey: NSNumber(1000000),
+                                              AVVideoMaxKeyFrameIntervalKey: NSNumber(150),
+                                              AVVideoProfileLevelKey: AVVideoProfileLevelH264BaselineAutoLevel,
+                                              AVVideoAllowFrameReorderingKey: false,
+                                              AVVideoH264EntropyModeKey: AVVideoH264EntropyModeCAVLC,
+                                              AVVideoExpectedSourceFrameRateKey: 30
+            ] as [String : Any]
+        
         let outputSetting: [String: Any] = [
             AVVideoCodecKey : AVVideoCodecType.h264,
             AVVideoWidthKey: size.width,
-            AVVideoHeightKey: size.height
+            AVVideoHeightKey: size.height,
+            AVVideoCompressionPropertiesKey: compressionSettings
         ]
         assetWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: outputSetting)
         assetWriter.add(assetWriterInput)
@@ -51,6 +62,7 @@ final class MetalVideoMaker {
         assetWriter.finishWriting(completionHandler: {})
     }
     
+    var test = TimeInterval(0)
     func writeFrame(_ frame: MTLTexture) {
         while !assetWriterInput.isReadyForMoreMediaData {}
         
@@ -69,9 +81,8 @@ final class MetalVideoMaker {
         let region = MTLRegionMake2D(0, 0, frame.width, frame.height)
         frame.getBytes(pixelBufferPtr, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
         
-        let frameTime = CACurrentMediaTime() - startTime
-        
-        let presentationTime = CMTimeMakeWithSeconds(frameTime, preferredTimescale: 240)
+        let presentationTime = CMTimeMakeWithSeconds(test, preferredTimescale: 240)
+        test += 1.0 / 30
         if assetWriterInput.isReadyForMoreMediaData {
             assetWriterInputPixelBufferAdapter.append(certainPixelBuffer, withPresentationTime: presentationTime)
         }

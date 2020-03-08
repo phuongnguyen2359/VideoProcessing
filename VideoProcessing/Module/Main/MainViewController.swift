@@ -174,11 +174,9 @@ final class MainViewController: UIViewController {
         secondVidAssetReader = try AVAssetReader(asset: secondAsset)
         
         let videoReaderSetting: [String: Any] = [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ]
         firstVidAssetOutput = AVAssetReaderTrackOutput(track: firstAsset.tracks(withMediaType: .video).first!, outputSettings: videoReaderSetting)
-        
-//        firstVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: firstAsset)
         if firstVidAssetReader.canAdd(firstVidAssetOutput) {
             firstVidAssetReader.add(firstVidAssetOutput)
         } else {
@@ -187,7 +185,6 @@ final class MainViewController: UIViewController {
         
         secondVidAssetOutput = AVAssetReaderTrackOutput(track: secondAsset.tracks(withMediaType: .video).first!,
                                                                    outputSettings: videoReaderSetting)
-//        secondVidAssetOutput.videoComposition = AVVideoComposition(propertiesOf: secondAsset)
         if secondVidAssetReader.canAdd(secondVidAssetOutput) {
             secondVidAssetReader.add(secondVidAssetOutput)
         } else { fatalError() }
@@ -257,8 +254,8 @@ final class MainViewController: UIViewController {
                 var isStartReadingSecondVid = false
                 var firstVidToEnd = false
                 var secondVidToEnd = false
-                var firstTexture: MTLTexture?
-                var secondTexture: MTLTexture?
+                var firstTexture: MTLTexture? = nil
+                var secondTexture: MTLTexture? = nil
                        
                 guard let firstUrl = self.firstVideoUrl, let secondUrl = self.secondVideoUrl else { return }
                 let firstDuration = AVAsset(url: firstUrl).duration
@@ -277,6 +274,7 @@ final class MainViewController: UIViewController {
                                 firstTexture = firstFrame
                             }
                         } else {
+                            firstTexture = nil
                             firstVidToEnd = true
                         }
                                
@@ -288,6 +286,7 @@ final class MainViewController: UIViewController {
                                     secondTexture = secondFrame
                                 }
                             } else {
+                                secondTexture = nil
                                 secondVidToEnd = true
                             }
                         }
