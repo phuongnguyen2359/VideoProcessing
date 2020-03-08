@@ -186,8 +186,8 @@ final class MetalView: MTKView {
         guard let drawable: CAMetalDrawable = self.currentDrawable else { return }
         computeCommandEncoder?.setTexture(drawable.texture, index: 3)
         
-        let index = Int(min(1, (1.0 - min(time / overlapDuration, 1))) * Float(blurWeights.count - 1))
-        let weight = blurWeights[index]
+        let index = Int(min(1, (1.0 - min(time / overlapDuration, 1))) * Float(blurWeights.count - 1)) * 2
+        let weight = blurWeights[index >= blurWeights.count ? 2 * blurWeights.count - index - 1 : index]
         
         let destTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r32Float, width: weight.size, height: weight.size, mipmapped: false)
         guard let blurWeightTexture = device?.makeTexture(descriptor: destTextureDescriptor) else {
