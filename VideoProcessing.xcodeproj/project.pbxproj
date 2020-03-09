@@ -16,6 +16,7 @@
 		E13B8E28240F238B00FE6271 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E27240F238B00FE6271 /* MetalView.swift */; };
 		E13B8E2A240F28B400FE6271 /* ColorKernel.metal in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E29240F28B400FE6271 /* ColorKernel.metal */; };
 		E1861A182416078900BE457F /* LoadingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1861A172416078900BE457F /* LoadingIndicator.swift */; };
+		E1861A1A24160E9300BE457F /* demo.png in Resources */ = {isa = PBXBuildFile; fileRef = E1861A1924160E9300BE457F /* demo.png */; };
 		E19B97812415831A00D76506 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19B97802415831A00D76506 /* Toast.swift */; };
 		E19B9784241598A800D76506 /* SavedVideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19B9783241598A800D76506 /* SavedVideoViewController.swift */; };
 		E1A99BE0240EADC500D87C12 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BDF240EADC500D87C12 /* AppDelegate.swift */; };
@@ -37,7 +38,9 @@
 		E118124F2414374F002D9F03 /* MainViewController+BlurWeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainViewController+BlurWeight.swift"; sourceTree = "<group>"; };
 		E13B8E27240F238B00FE6271 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		E13B8E29240F28B400FE6271 /* ColorKernel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ColorKernel.metal; sourceTree = "<group>"; };
+		E1861A162416007400BE457F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E1861A172416078900BE457F /* LoadingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingIndicator.swift; sourceTree = "<group>"; };
+		E1861A1924160E9300BE457F /* demo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = demo.png; sourceTree = "<group>"; };
 		E19B97802415831A00D76506 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		E19B9783241598A800D76506 /* SavedVideoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedVideoViewController.swift; sourceTree = "<group>"; };
 		E1A99BDC240EADC500D87C12 /* VideoProcessing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoProcessing.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,6 +85,8 @@
 		E1A99BD3240EADC500D87C12 = {
 			isa = PBXGroup;
 			children = (
+				E1861A1924160E9300BE457F /* demo.png */,
+				E1861A162416007400BE457F /* README.md */,
 				E1A99BDE240EADC500D87C12 /* VideoProcessing */,
 				E1A99BDD240EADC500D87C12 /* Products */,
 			);
@@ -204,6 +209,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1861A1A24160E9300BE457F /* demo.png in Resources */,
 				E1A99BEC240EADC700D87C12 /* LaunchScreen.storyboard in Resources */,
 				E1A99BE9240EADC700D87C12 /* Assets.xcassets in Resources */,
 				E1A99BE7240EADC500D87C12 /* Main.storyboard in Resources */,
