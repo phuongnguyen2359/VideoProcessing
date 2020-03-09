@@ -19,8 +19,31 @@ final class MainViewController: UIViewController {
     var firstPlayerItem: AVPlayerItem!
     var secondPlayerItem: AVPlayerItem!
     var overlapDuration: Float = Constant.maxOverlapDuration
-    var firstVideoUrl: URL?
-    var secondVideoUrl: URL?
+    
+    var firstVideoUrl: URL? {
+        didSet {
+            leftButtonContainerView.backgroundColor = firstVideoUrl == nil ? UIColor.clear : UIColor.white
+            if secondVideoUrl == nil {
+                statusLabel.text = "Add one more video"
+            } else if firstVideoUrl != nil {
+                statusLabel.text = "Now you can play or save new video with our effect"
+            } else {
+                statusLabel.text = ""
+            }
+        }
+    }
+    var secondVideoUrl: URL? {
+        didSet {
+            rightButtonContainerView.backgroundColor = secondVideoUrl == nil ? UIColor.clear : UIColor.white
+            if firstVideoUrl == nil {
+                statusLabel.text = "Add one more video"
+            } else if secondVideoUrl != nil {
+                statusLabel.text = "Now you can play or save new video with our effect"
+            } else {
+                statusLabel.text = ""
+            }
+        }
+    }
     var isRecording = false
     
     var firstVidAssetReader: AVAssetReader!
@@ -54,6 +77,13 @@ final class MainViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         preparePlayerItem()
+        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.barTintColor = #colorLiteral(red: 0.1005150601, green: 0.7877844572, blue: 0.5518413186, alpha: 1)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.isHidden = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -75,6 +105,9 @@ final class MainViewController: UIViewController {
     
     @objc func secondVideoDidPlayToEnd() {
         print("second did end")
+        
+        secondPlayer.pause()
+        displayLink.isPaused = true
         removeObserver()
         if isRecording {
             metalView.videoMaker?.finishSession()
@@ -83,7 +116,6 @@ final class MainViewController: UIViewController {
     @objc func firstVideoDidPlayToEnd() {
         print("first did end")
         firstPlayer.pause()
-        removeObserver()
         if isRecording {
             metalView.videoMaker?.finishSession()
         }
@@ -232,14 +264,39 @@ final class MainViewController: UIViewController {
     
     @IBOutlet weak var optionButton: UIButton!
     
+    @IBOutlet weak var statusLabel: UILabel!
+    
     @IBAction func playVideo(_ sender: Any) {
+        guard firstVideoUrl != nil && secondVideoUrl != nil else {
+            statusLabel.text = "Add 2 videos so you can enjoy"
+            return
+        }
+        statusLabel.text = ""
         preparePlayerItem()
         metalView.videoMaker?.startSession()
         firstPlayer.play()
         displayLink.isPaused = false
     }
+    @IBOutlet weak var directoryContainerView: UIView! {
+        
+        didSet {
+            directoryContainerView.layer.cornerRadius = 25
+            directoryContainerView.layer.shadowColor = #colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)
+            directoryContainerView.layer.shadowOpacity = 1
+            directoryContainerView.layer.shadowOffset = .zero
+            directoryContainerView.layer.shadowRadius = 10
+        }
+    }
+    @IBAction func openDirectory(_ sender: Any) {
+        
+    }
     
     @IBAction func saveVideo(_ sender: Any) {
+        guard let firstUrl = self.firstVideoUrl, let secondUrl = self.secondVideoUrl else {
+            statusLabel.text = "Add 2 videos so you can enjoy"
+            return
+        }
+        statusLabel.text = "Saving ..."
         let contentMode = SupportedContentMode.createFromUIViewContentMode(metalView.contentMode) ?? SupportedContentMode.scaleAspectFit
         self.metalView.prepareForSaveVideo()
         self.metalView.videoMaker?.startSession()
@@ -256,8 +313,7 @@ final class MainViewController: UIViewController {
                 var secondVidToEnd = false
                 var firstTexture: MTLTexture? = nil
                 var secondTexture: MTLTexture? = nil
-                       
-                guard let firstUrl = self.firstVideoUrl, let secondUrl = self.secondVideoUrl else { return }
+                
                 let firstDuration = AVAsset(url: firstUrl).duration
                 let secondDuration = AVAsset(url: secondUrl).duration
                        
@@ -301,10 +357,16 @@ final class MainViewController: UIViewController {
                 self.firstVidAssetReader.cancelReading()
                 self.secondVidAssetReader.cancelReading()
                        
-                print("fishnish save")
+                DispatchQueue.main.async {
+                    self.statusLabel.text = ""
+                    Toast.instance.showText("Saving successfully!")
+                }
                        
             } catch {
-                print(error)
+                DispatchQueue.main.async {
+                    self.statusLabel.text = ""
+                    Toast.instance.showText("Saving unsuccessfully: \(error.localizedDescription)")
+                }
             }
                    
         }
