@@ -16,7 +16,7 @@ Metal is not supported on iOS simulator and any iOS device doesn't run the A7 ch
 * You need to add 2 videos before playing or saving transition applied video using the left and right add button
 * Using the middle button to adjust the length of the transition effect
 
-![Alt text](demo.png?raw=true "Title")
+![Alt text](demo.png?raw=true "Screenshot")
 
 
 ## Limitation ##
