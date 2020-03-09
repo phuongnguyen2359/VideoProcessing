@@ -39,16 +39,11 @@ final class MetalView: MTKView {
     private var blurComputePipelineState: MTLComputePipelineState
     
     var videoMaker: MetalVideoMaker?
-    var formatter: DateFormatter = {
-       let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'"
-        return formatter
-    }()
     
     var videoPath: URL {
         let date = Date()
         let documentPath = NSTemporaryDirectory()
-        let path = "\(documentPath)/\(formatter.string(from: date)).mp4"
+        let path = "\(documentPath)/\(Int(date.timeIntervalSince1970.rounded())).mp4"
         return URL(fileURLWithPath: path)
     }
     

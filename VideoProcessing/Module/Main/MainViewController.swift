@@ -44,7 +44,6 @@ final class MainViewController: UIViewController {
             }
         }
     }
-    var isRecording = false
     
     var firstVidAssetReader: AVAssetReader!
     var secondVidAssetReader: AVAssetReader!
@@ -109,16 +108,10 @@ final class MainViewController: UIViewController {
         secondPlayer.pause()
         displayLink.isPaused = true
         removeObserver()
-        if isRecording {
-            metalView.videoMaker?.finishSession()
-        }
     }
     @objc func firstVideoDidPlayToEnd() {
         print("first did end")
         firstPlayer.pause()
-        if isRecording {
-            metalView.videoMaker?.finishSession()
-        }
     }
     
     deinit {
