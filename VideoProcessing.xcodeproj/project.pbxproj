@@ -15,6 +15,7 @@
 		E11812502414374F002D9F03 /* MainViewController+BlurWeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = E118124F2414374F002D9F03 /* MainViewController+BlurWeight.swift */; };
 		E13B8E28240F238B00FE6271 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E27240F238B00FE6271 /* MetalView.swift */; };
 		E13B8E2A240F28B400FE6271 /* ColorKernel.metal in Sources */ = {isa = PBXBuildFile; fileRef = E13B8E29240F28B400FE6271 /* ColorKernel.metal */; };
+		E1861A182416078900BE457F /* LoadingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1861A172416078900BE457F /* LoadingIndicator.swift */; };
 		E19B97812415831A00D76506 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19B97802415831A00D76506 /* Toast.swift */; };
 		E19B9784241598A800D76506 /* SavedVideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19B9783241598A800D76506 /* SavedVideoViewController.swift */; };
 		E1A99BE0240EADC500D87C12 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A99BDF240EADC500D87C12 /* AppDelegate.swift */; };
@@ -36,6 +37,7 @@
 		E118124F2414374F002D9F03 /* MainViewController+BlurWeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainViewController+BlurWeight.swift"; sourceTree = "<group>"; };
 		E13B8E27240F238B00FE6271 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		E13B8E29240F28B400FE6271 /* ColorKernel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ColorKernel.metal; sourceTree = "<group>"; };
+		E1861A172416078900BE457F /* LoadingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingIndicator.swift; sourceTree = "<group>"; };
 		E19B97802415831A00D76506 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		E19B9783241598A800D76506 /* SavedVideoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedVideoViewController.swift; sourceTree = "<group>"; };
 		E1A99BDC240EADC500D87C12 /* VideoProcessing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoProcessing.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,6 +118,7 @@
 				E118124B24139BFC002D9F03 /* Constant.swift */,
 				E118124D24142C05002D9F03 /* Renderer.swift */,
 				E19B97802415831A00D76506 /* Toast.swift */,
+				E1861A172416078900BE457F /* LoadingIndicator.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -226,6 +229,7 @@
 				E118124A24138DF6002D9F03 /* TransitionOptionViewController.swift in Sources */,
 				E13B8E2A240F28B400FE6271 /* ColorKernel.metal in Sources */,
 				E118124C24139BFC002D9F03 /* Constant.swift in Sources */,
+				E1861A182416078900BE457F /* LoadingIndicator.swift in Sources */,
 				E1A99BF5240EBC9800D87C12 /* UIView+Decor.swift in Sources */,
 				E1A99BE2240EADC500D87C12 /* SceneDelegate.swift in Sources */,
 				E19B97812415831A00D76506 /* Toast.swift in Sources */,

@@ -289,7 +289,8 @@ final class MainViewController: UIViewController {
             statusLabel.text = "Add 2 videos so you can enjoy"
             return
         }
-        statusLabel.text = "Saving ..."
+        statusLabel.text = ""
+        LoadingIndicator.instance.show(with: "Saving...")
         let contentMode = SupportedContentMode.createFromUIViewContentMode(metalView.contentMode) ?? SupportedContentMode.scaleAspectFit
         self.metalView.prepareForSaveVideo()
         self.metalView.videoMaker?.startSession()
@@ -353,6 +354,7 @@ final class MainViewController: UIViewController {
                 DispatchQueue.main.async {
                     self.statusLabel.text = ""
                     Toast.instance.showText("Saving successfully!")
+                    LoadingIndicator.instance.hide()
                 }
                        
             } catch {
