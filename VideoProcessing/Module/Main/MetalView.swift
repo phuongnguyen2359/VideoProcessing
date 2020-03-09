@@ -282,7 +282,7 @@ final class MetalView: MTKView {
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
         
-        self.videoMaker?.writeFrame(fadedTexture)
+        self.videoMaker?.writeFrame(outTexture)
     }
     
     private func copyToSharedModeTexture(from sourceTexture: MTLTexture, commandBuffer: MTLCommandBuffer) -> MTLTexture? {

@@ -24,7 +24,7 @@ class SavedVideoViewController: UIViewController {
     
     func readFilesFromDirectory() {
         do {
-            fileNames = try FileManager.default.contentsOfDirectory(atPath: NSTemporaryDirectory())
+            fileNames = try FileManager.default.contentsOfDirectory(atPath: NSTemporaryDirectory()).reversed()
             tableView.reloadData()
         } catch {
             
